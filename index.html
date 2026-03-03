@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Petshop</title>
+    <style>
+        /* THEME: Violet + Purple + Light Shades 
+           VIBE: Buttery Smooth, Glassmorphism
+        */
+        :root {
+            --primary: #6a0dad;
+            --primary-dark: #4b0082;
+            --secondary: #9370db;
+            --light-lavender: #e6e6fa;
+            --white-glass: rgba(255, 255, 255, 0.15);
+            --text-glow: 0 0 10px rgba(230, 230, 250, 0.5);
+            --ease-smooth: cubic-bezier(0.23, 1, 0.32, 1); /* Buttery smooth easing */
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, sans-serif;
+            color: #fff;
+            background: linear-gradient(300deg, #240046, #3c096c, #5a189a, #7b2cbf, #9d4edd);
+            background-size: 300% 300%;
+            animation: gradientAnim 15s ease infinite;
+            min-height: 100vh;
+            overflow-x: hidden;
+            display: flex; 
+            flex-direction: column;
+        }
+
+        @keyframes gradientAnim {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* HEADER & SEARCH */
+        header {
+            padding: 20px 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            backdrop-filter: blur(10px);
+            background: rgba(0,0,0,0.2);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .brand-title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            letter-spacing: 2px;
+            text-shadow: var(--text-glow);
+            background: linear-gradient(to right, #e0aaff, #fff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            cursor: pointer;
+        }
+
+        .search-wrapper {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .search-bar {
+            width: 180px; /* Small initially */
+            padding: 12px 25px;
+            border-radius: 50px;
+            border: 1px solid rgba(255,255,255,0.3);
+            background: var(--white-glass);
+            color: #fff;
+            outline: none;
+            transition: width 0.6s var(--ease-smooth), background 0.3s;
+            font-size: 1rem;
+            text-align: center;
+        }
+
+        .search-bar::placeholder { color: rgba(255,255,255,0.7); }
+
+        .search-bar:hover, .search-bar:focus {
+            width: 450px; /* Expands smoothly */
+            background: rgba(255,255,255,0.25);
+            text-align: left;
+            box-shadow: 0 0 20px rgba(147, 112, 219, 0.4);
+        }
+
+        /* CART ICON */
+        .cart-trigger {
+            font-size: 1.8rem;
+            cursor: pointer;
+            position: relative;
+            transition: transform 0.3s;
+        }
+        .cart-trigger:hover { transform: scale(1.2) rotate(-10deg); }
+        .cart-badge {
+            position: absolute;
+            top: -5px; right: -10px;
+            background: #ff0055;
+            font-size: 0.8rem;
+            width: 20px; height: 20px;
+            border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
+            font-weight: bold;
+        }
+
+        /* PRODUCT GRID */
+        .container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            flex: 1;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.1);
+            backdrop-filter: blur(5px);
+            transition: transform 0.4s var(--ease-smooth), box-shadow 0.4s;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card:hover {
+            transform: translateY(-15px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+            border-color: rgba(255,255,255,0.3);
+        }
+
+        /* Image Area */
+        .img-box {
+            height: 220px;
+            width: 100%;
+            background: rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+        .img-box img {
+            width: 100%; height: 100%;
+            object-fit: cover;
+            transition: transform 0.6s var(--ease-smooth);
+        }
+        .card:hover .img-box img { transform: scale(1.1); }
+
+        /* Annotations */
+        .annotation {
+            position: absolute;
+            top: 15px; left: 15px;
+            padding: 5px 12px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            z-index: 2;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        .tag-new { background: linear-gradient(45deg, #00f260, #0575e6); }
+        .tag-fresh { background: linear-gradient(45deg, #ff9966, #ff5e62); }
+        .tag-trending { background: linear-gradient(45deg, #833ab4, #fd1d1d, #fcb045); }
+        .tag-oos {background: linear-gradient(45deg, #ff416c, #ff4b2b); }
+
+        .card-details { padding: 20px; text-align: center; flex-grow: 1; display: flex; flex-direction: column; }
+        .fish-name { font-size: 1.5rem; margin-bottom: 5px; }
+        .fish-type { color: #bbb; font-size: 0.9rem; margin-bottom: 15px; font-style: italic; }
+        .price { font-size: 1.6rem; color: #ffd700; font-weight: bold; margin-bottom: 20px; }
+        
+        .btn {
+            margin-top: auto;
+            padding: 12px;
+            border: none;
+            border-radius: 12px;
+            background: var(--primary);
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 100%;
+        }
+        .btn:hover { background: var(--primary-dark); transform: scale(1.02); }
+        .btn:active { transform: scale(0.95); }
+
+        /* FOOTER */
+        footer {
+            background: rgba(0,0,0,0.4);
+            padding: 40px 20px;
+            text-align: center;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            font-size: 0.9rem;
+            color: #ccc;
+        }
+        .footer-content p { margin: 8px 0; }
+        .footer-link { color: var(--secondary); text-decoration: none; transition: color 0.3s; }
+        .footer-link:hover { color: #fff; }
+
+        /* MODALS (Cart, Checkout) */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            display: none; justify-content: center; align-items: center;
+            opacity: 0; transition: opacity 0.3s;
+        }
+        .modal-overlay.active { display: flex; opacity: 1; }
+        
+        .modal-box {
+            background: linear-gradient(145deg, #2a0a45, #150525);
+            padding: 30px;
+            border-radius: 25px;
+            width: 90%; max-width: 500px;
+            border: 1px solid rgba(255,255,255,0.2);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+            transform: scale(0.8); transition: transform 0.3s var(--ease-smooth);
+            position: relative;
+        }
+        .modal-overlay.active .modal-box { transform: scale(1); }
+        
+        .close-btn {
+            position: absolute; top: 15px; right: 20px;
+            font-size: 1.5rem; cursor: pointer; color: #aaa;
+        }
+        .close-btn:hover { color: #fff; }
+
+        /* Cart Items */
+        .cart-item { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid #333; padding-bottom: 10px; }
+        .qty-control button { background: #444; border: none; color: white; padding: 5px 10px; border-radius: 5px; cursor: pointer; }
+        
+        /* Checkout Form */
+        .form-group { margin-bottom: 15px; text-align: left; }
+        .form-group label { display: block; margin-bottom: 5px; color: #ddd; }
+        .form-input { width: 100%; padding: 10px; border-radius: 8px; border: none; background: rgba(255,255,255,0.1); color: white; }
+        .payment-option { background: rgba(106, 13, 173, 0.2); padding: 15px; border-radius: 10px; border: 1px solid var(--primary); text-align: center; }
+
+        /* AI SIDEBAR */
+        .ai-trigger {
+            position: fixed; bottom: 30px; right: 30px;
+            width: 60px; height: 60px;
+            background: linear-gradient(135deg, #00c6ff, #0072ff);
+            border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 30px;
+            cursor: pointer;
+            box-shadow: 0 10px 25px rgba(0,114,255,0.4);
+            z-index: 2000;
+            transition: transform 0.3s;
+        }
+        .ai-trigger:hover { transform: scale(1.1) rotate(15deg); }
+
+        .ai-sidebar {
+            position: fixed; top: 0; right: -400px;
+            width: 350px; height: 100%;
+            background: linear-gradient(180deg, #1a1a2e, #16213e);
+            z-index: 2001;
+            transition: right 0.4s var(--ease-smooth);
+            display: flex; flex-direction: column;
+            box-shadow: -10px 0 30px rgba(0,0,0,0.5);
+            border-left: 1px solid rgba(255,255,255,0.1);
+        }
+        .ai-sidebar.open { right: 0; }
+        
+        .ai-header { padding: 20px; background: rgba(0,0,0,0.3); display: flex; justify-content: space-between; align-items: center; }
+        .ai-messages { flex: 1; padding: 20px; overflow-y: auto; font-size: 0.9rem; }
+        .ai-input-area { padding: 20px; display: flex; }
+        
+        .msg { margin-bottom: 10px; padding: 10px 15px; border-radius: 15px; max-width: 80%; }
+        .msg.bot { background: #333; align-self: flex-start; border-bottom-left-radius: 2px; }
+        .msg.user { background: var(--primary); align-self: flex-end; margin-left: auto; border-bottom-right-radius: 2px; }
+
+        /* Order Popup */
+        #toast {
+            position: fixed; top: -80px; left: 50%; transform: translateX(-50%);
+            background: #00b09b; /* Green */
+            padding: 15px 40px; border-radius: 50px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            z-index: 3000; transition: top 0.5s var(--ease-smooth);
+            font-weight: bold; letter-spacing: 1px;
+        }
+        #toast.show { top: 30px; }
+
+    </style>
+</head>
+<body>
+
+    <div id="toast">Order Placed Successfully! 🚀</div>
+
+    <header>
+        <div class="brand-title">The Petshop</div>
+        <div class="search-wrapper">
+            <input type="text" class="search-bar" id="search-input" placeholder="Search fishes...">
+        </div>
+        <div class="cart-trigger" onclick="openCart()">
+            🛒 <span class="cart-badge" id="cart-count">0</span>
+        </div>
+    </header>
+
+    <div class="container" id="product-grid">
+        </div>
+
+    <footer>
+        <div class="footer-content">
+            <p>&copy; 2025 The Petshop. All rights reserved.</p>
+            <p style="font-size: 0.8rem; opacity: 0.7; margin-top: 15px;">
+                Developed by: <strong>H Technologies</strong>
+            </p>
+            <p style="font-size: 0.8rem;">
+                Contact: htechnologiesindia@gmail.com 
+            </p>
+            <div style="margin-top: 15px;">
+                <a href="#" class="footer-link">Privacy Policy</a> | 
+                <a href="#" class="footer-link">Terms of Service</a> | 
+                <a href="#" class="footer-link">Refund Policy</a>
+            </div>
+        </div>
+    </footer>
+
+    <div class="modal-overlay" id="cart-modal">
+        <div class="modal-box">
+            <span class="close-btn" onclick="closeCart()">&times;</span>
+            <h2 style="margin-bottom: 20px;">Your Shopping Cart</h2>
+            <div id="cart-items" style="max-height: 300px; overflow-y: auto; margin-bottom: 20px;">
+                </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 20px; font-size: 1.2rem; font-weight: bold;">
+                <span>Total:</span>
+                <span id="cart-total">₹0</span>
+            </div>
+            <button class="btn" onclick="openCheckout()">Proceed to Checkout</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="checkout-modal">
+        <div class="modal-box">
+            <span class="close-btn" onclick="closeCheckout()">&times;</span>
+            <h2 style="margin-bottom: 20px;">Checkout</h2>
+            
+            <div class="payment-option">
+                Payment Method: <strong>Cash on Delivery</strong> 💵
+            </div>
+            <br>
+            <div class="form-group">
+                <label>Full Name</label>
+                <input type="text" class="form-input" id="chk-name">
+            </div>
+            <div class="form-group">
+                <label>Delivery Location</label>
+                <input type="text" class="form-input" id="chk-loc">
+            </div>
+            
+            <button class="btn" onclick="confirmOrder()">Confirm Order</button>
+        </div>
+    </div>
+
+    <div class="ai-trigger" onclick="toggleAI()">🤖</div>
+    <div class="ai-sidebar" id="ai-sidebar">
+        <div class="ai-header">
+            <h3>Webfluid AI <span style="font-size: 0.7rem; background: #ff0055; padding: 2px 6px; border-radius: 4px;">BETA</span></h3>
+            <span style="cursor: pointer; font-size: 1.5rem;" onclick="toggleAI()">&times;</span>
+        </div>
+        <div class="ai-messages" id="chat-box">
+            <div class="msg bot">Hello! I am Webfluid AI. Ask me anything about our fishes or the website!</div>
+        </div>
+        <div class="ai-input-area">
+            <input type="text" id="ai-input" class="form-input" placeholder="Ask something..." onkeypress="if(event.key==='Enter') sendAI()">
+            <button class="btn" style="width: auto; margin-left: 10px;" onclick="sendAI()">➤</button>
+        </div>
+    </div>
+
+    <script>
+        const products = [
+            {
+                id: 1,
+                name: "Neon Tetra",
+                type: "Freshwater",
+                price: 150, 
+                image: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/97/Neonsalmler_Paracheirodon_innesi.jpg/640px-Neonsalmler_Paracheirodon_innesi.jpg", 
+                tag: "Trending",
+                tagClass: "tag-trending"
+            },
+            {
+                id: 2,
+                name: "Betta Fish",
+                type: "Fighter",
+                price: 450,
+                image: "https://pet-health-content-media.chewy.com/wp-content/uploads/2025/03/13175316/betta-fish-facts-1024x797.jpg", 
+                tag: "New",
+                tagClass: "tag-new"
+            },
+            {
+                id: 3,
+                name: "Goldfish",
+                type: "Coldwater",
+                price: 200,
+                image: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e9/Goldfish3.jpg/640px-Goldfish3.jpg", 
+                tag: "Fresh",
+                tagClass: "tag-fresh"
+            },
+            {
+                id: 4,
+                name: "Mollie",
+                type: "Coldwater",
+                price: 200,
+                image: "https://www.thesprucepets.com/thmb/YRvcNvd7zaR1poa6Impm8LJxJdc=/4192x0/filters:no_upscale():strip_icc()/the-mollie-1380726-03-e139588525c84a7b99846539fb5d0ae7.jpg", 
+                tag: "Fresh",
+                tagClass: "tag-fresh"
+            },
+            {
+                id: 5,
+                name: "Barb",
+                type: "Coldwater",
+                price: 200,
+                image: "https://pet-health-content-media.chewy.com/wp-content/uploads/2025/04/16194027/202503bec-CANS-tiger-barb-fish-1-1024x576.jpg", 
+                tag: "Fresh",
+                tagClass: "tag-oos"
+            },
+            {
+                id: 6,
+                name: "Guppy",
+                type: "Tropical",
+                price: 80,
+                image: "https://cdn.pixabay.com/photo/2017/08/04/12/13/guppy-2579971_1280.jpg", 
+                tag: "" 
+            }
+        ];
+
+        const grid = document.getElementById('product-grid');
+        function render() {
+            grid.innerHTML = products.map(p => `
+                <div class="card">
+                    ${p.tag ? `<div class="annotation ${p.tagClass}">${p.tag}</div>` : ''}
+                    <div class="img-box">
+                        <img src="${p.image}" alt="${p.name}">
+                    </div>
+                    <div class="card-details">
+                        <div class="fish-name">${p.name}</div>
+                        <div class="fish-type">${p.type}</div>
+                        <div class="price">₹${p.price}</div>
+                        <button class="btn" onclick="addToCart(${p.id})">Add to Cart</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        render();
+
+        document.getElementById('search-input').addEventListener('input', (e) => {
+            const val = e.target.value.toLowerCase();
+            const cards = document.querySelectorAll('.card');
+            cards.forEach(card => {
+                const name = card.querySelector('.fish-name').innerText.toLowerCase();
+                card.style.display = name.includes(val) ? 'flex' : 'none';
+            });
+        });
+
+        let cart = [];
+        
+        function addToCart(id) {
+            const p = products.find(x => x.id === id);
+            const existing = cart.find(x => x.id === id);
+            if(existing) existing.quantity++;
+            else cart.push({...p, quantity: 1});
+            updateCartUI();
+        }
+
+        function updateCartUI() {
+            document.getElementById('cart-count').innerText = cart.reduce((a,b)=>a+b.quantity, 0);
+            
+            const cartHTML = cart.map(item => `
+                <div class="cart-item">
+                    <div>
+                        <strong>${item.name}</strong><br>
+                        <small>₹${item.price} x ${item.quantity}</small>
+                    </div>
+                    <div class="qty-control">
+                        <button onclick="changeQty(${item.id}, -1)">-</button>
+                        <span style="margin:0 5px">${item.quantity}</span>
+                        <button onclick="changeQty(${item.id}, 1)">+</button>
+                    </div>
+                </div>
+            `).join('');
+            
+            document.getElementById('cart-items').innerHTML = cartHTML;
+            
+            const total = cart.reduce((a,b) => a + (b.price * b.quantity), 0);
+            document.getElementById('cart-total').innerText = "₹" + total;
+        }
+
+        function changeQty(id, delta) {
+            const item = cart.find(x => x.id === id);
+            item.quantity += delta;
+            if(item.quantity <= 0) cart = cart.filter(x => x.id !== id);
+            updateCartUI();
+        }
+
+        function openCart() { document.getElementById('cart-modal').classList.add('active'); }
+        function closeCart() { document.getElementById('cart-modal').classList.remove('active'); }
+        function openCheckout() { 
+            if(cart.length === 0) return alert("Cart is empty!");
+            closeCart();
+            document.getElementById('checkout-modal').classList.add('active'); 
+        }
+        function closeCheckout() { document.getElementById('checkout-modal').classList.remove('active'); }
+
+        function confirmOrder() {
+            const name = document.getElementById('chk-name').value;
+            const loc = document.getElementById('chk-loc').value;
+
+            if(!name || !loc) return alert("Please fill all details");
+
+            const toast = document.getElementById('toast');
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+
+            fetch('/place_order', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    name: name,
+                    location: loc,
+                    cart: cart
+                })
+            }).then(res => {
+                console.log("Order sent to host PC");
+                cart = [];
+                updateCartUI();
+                closeCheckout();
+            }).catch(err => console.error("Error sending order", err));
+        }
+
+        function toggleAI() {
+            document.getElementById('ai-sidebar').classList.toggle('open');
+        }
+
+        function sendAI() {
+            const input = document.getElementById('ai-input');
+            const txt = input.value.trim().toLowerCase();
+            if(!txt) return;
+
+            addMsg(input.value, 'user');
+            input.value = '';
+
+            setTimeout(() => {
+                let reply = "";
+                
+                if(txt.includes("internet") || txt.includes("wifi") || txt.includes("connection")) {
+                    reply = "Please check your internet connection. I am running locally, but a stable connection ensures the best experience!";
+                }
+                else if(txt.includes("website") || txt.includes("pet") || txt.includes("price") || txt.includes("buy")) {
+                    reply = "We have a great collection of fishes like Neon Tetras, Bettas, and Goldfish. You can add them to your cart and checkout using Cash on Delivery!";
+                }
+                else if(txt.includes("delivery") || txt.includes("order") || txt.includes("track")) {
+                    reply = "We only offer Cash on Delivery right now. Once you place an order, our system will process it immediately.";
+                }
+                else if(txt.includes("hello") || txt.includes("hi")) {
+                    reply = "Hello there! How can I help you find your perfect pet today?";
+                }
+                else {
+                    reply = "I apologize, but I am Webfluid AI BETA. I can only answer questions related to The Petshop and our fishes. Please ask something else!";
+                }
+
+                addMsg(reply, 'bot');
+            }, 600);
+        }
+
+        function addMsg(text, type) {
+            const div = document.createElement('div');
+            div.className = `msg ${type}`;
+            div.innerText = text;
+            const box = document.getElementById('chat-box');
+            box.appendChild(div);
+            box.scrollTop = box.scrollHeight;
+        }
+    </script>
+</body>
+</html>
